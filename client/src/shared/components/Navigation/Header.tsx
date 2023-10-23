@@ -11,8 +11,8 @@ export const Header = () => {
         w={6}
         src={
           colorMode === 'dark'
-            ? '../../../../public/light-logo.svg'
-            : '../../../../public/dark-logo.svg'
+            ? '/public/light-logo.svg'
+            : '/public/dark-logo.svg'
         }
         onClick={toggleColorMode}
       />

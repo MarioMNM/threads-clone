@@ -52,7 +52,7 @@ export const UserHeader = () => {
         <Box>
           <Avatar
             name='Mario Novella'
-            src='../../../public/mario-avatar.jpg'
+            src='/mario-avatar.jpg'
             size={'xl'}
           />
         </Box>
