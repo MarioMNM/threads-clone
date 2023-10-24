@@ -10,7 +10,7 @@ export const PostItem = () => {
     <Link to={'/mariomnm/post/1'}>
       <Flex gap={3} mb={4} py={5}>
         <Flex flexDirection={'column'} alignItems={'center'}>
-          <Avatar size={'md'} name='Mario Novella' src='/public/mario-avatar.jpg' />
+          <Avatar size={'md'} name='Mario Novella' src='/mario-avatar.jpg' />
           <Box w='1px' h={'full'} bg={'gray.light'} my={2}></Box>
           <Box position={'relative'} w={'full'}>
             <Avatar
@@ -48,7 +48,7 @@ export const PostItem = () => {
               <Text fontSize={'sm'} fontWeight={'bold'}>
                 mariomnm
               </Text>
-              <Image src='/public/verified.png' w={4} h={4} ml={1} />
+              <Image src='/verified.png' w={4} h={4} ml={1} />
             </Flex>
             <Flex gap={4} alignItems={'center'}>
               <Text fontStyle={'sm'} color={'gray.light'}>
@@ -64,7 +64,7 @@ export const PostItem = () => {
             border={'1px solid '}
             borderColor={'gray.light'}
           >
-            <Image src='/public/Rand_al28129.jpg' w={'full'} />
+            <Image src='/Rand_al28129.jpg' w={'full'} />
           </Box>
           <Flex gap={3} my={1}>
             <Actions liked={liked} setLiked={setLiked} />
