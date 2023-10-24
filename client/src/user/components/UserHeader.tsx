@@ -53,7 +53,10 @@ export const UserHeader = () => {
           <Avatar
             name='Mario Novella'
             src='/mario-avatar.jpg'
-            size={'xl'}
+            size={{
+              base: 'md',
+              md: 'xl'
+            }}
           />
         </Box>
       </Flex>

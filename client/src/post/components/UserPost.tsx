@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom'
 import { Actions } from './Actions'
 import { useState } from 'react'
 
-export const PostItem = () => {
+export const UserPost = () => {
   const [liked, setLiked] = useState(false)
   return (
     <Link to={'/mariomnm/post/1'}>
