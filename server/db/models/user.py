@@ -1,6 +1,9 @@
-from typing import List, Optional
+from datetime import datetime
+from typing import List
 from pydantic import BaseModel, EmailStr, Field, SecretStr
 from bson import ObjectId
+
+from utils.helpers.datetime_helpers import datetime_now
 
 
 class User(BaseModel):
@@ -8,11 +11,12 @@ class User(BaseModel):
     name: str = Field(...)
     username: str = Field(...)
     email: EmailStr = Field(unique=True, index=True)
-    profilePic: str = ""
-    bio: str = ""
+    profilePic: None | str = ""
+    bio: None | str = ""
     password: SecretStr
-    followers: List[str] = []
-    following: List[str] = []
+    followers: None | List[str] = []
+    following: None | List[str] = []
+    updatedAt: datetime = Field(default_factory=datetime_now)
 
     class Config:
         populate_by_name = True
@@ -26,30 +30,6 @@ class User(BaseModel):
                 "name": "Mario",
                 "email": "mario@gmail.com",
                 "username": "mariomnm",
-                "password": "foobar",
-                "profilePic": "https://avatars.githubusercontent.com/u/117460164?s=400&u=e32c1ba05557a3f647818d2a767f2f08dee48851&v=4",
-                "bio": "Mathematician & Data Scientist. AI enthusiast. Web development passionate.",
-                "followers": [],
-                "following": [],
-            }
-        }
-
-
-class UserData(BaseModel):
-    name: str = Field(...)
-    username: str = Field(...)
-    email: EmailStr = Field(unique=True, index=True)
-    profilePic: Optional[str] = ""
-    bio: Optional[str] = ""
-
-    class Config:
-        populate_by_name = True
-        json_schema_extra = {
-            "example": {
-                "name": "Mario",
-                "email": "mario@gmail.com",
-                "username": "mariomnm",
-                "profilePic": "https://avatars.githubusercontent.com/u/117460164?s=400&u=e32c1ba05557a3f647818d2a767f2f08dee48851&v=4",
-                "bio": "Mathematician & Data Scientist. AI enthusiast. Web development passionate.",
+                "password": "foobar"
             }
         }
