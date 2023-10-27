@@ -1,23 +1,23 @@
+from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from pymongo import MongoClient
 from dotenv import dotenv_values
+
 import uvicorn
 from routes.api import router as api_router
 
 
 config = dotenv_values(".env")
 
-app = FastAPI()
-
-@app.on_event("startup")
-def startup_db_client():
+@asynccontextmanager
+async def lifespan(app: FastAPI):
     app.mongodb_client = MongoClient(config["DB_URL"])
     app.database = app.mongodb_client[config["DB_NAME"]]
-    print("Project connected to the MongoDB database!")
-
-@app.on_event("shutdown")
-def shutdown_db_client():
+    yield
     app.mongodb_client.close()
+
+
+app = FastAPI(lifespan=lifespan)
 
 app.include_router(api_router)
 

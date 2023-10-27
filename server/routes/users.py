@@ -5,9 +5,9 @@ from db.models.user import User
 import rules.users as users_rules
 
 
-router = APIRouter(prefix="/user", tags=["User"])
+router = APIRouter(prefix="/users", tags=["Users"])
 
-@router.post("/", response_description="Create a new user", status_code=status.HTTP_201_CREATED, response_model=User)
+@router.post("/signup", response_description="Create a new user", status_code=status.HTTP_201_CREATED, response_model=User)
 def create_user(request: Request, user: User = Body(...)):  
     return users_rules.create_user(request,user)
 

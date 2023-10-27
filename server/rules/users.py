@@ -1,8 +1,18 @@
 from fastapi import Body, Request, HTTPException, status
 from fastapi.encoders import jsonable_encoder
+from passlib.context import CryptContext
 from db.models.user import User
 from bson import ObjectId
 
+
+
+crypt = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+def verify_password(plain_password, hashed_password):
+    return crypt.verify(plain_password, hashed_password)
+
+def get_password_hash(password):
+    return crypt.hash(password)
 
 def get_collection_users(request: Request):
   return request.app.database["users"]
@@ -13,6 +23,8 @@ def create_user(request: Request, user: User = Body(...)):
     
     if existing_user:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Email address is already in use")
+    
+    user["password"] = get_password_hash(user["password"])
     
     new_user = get_collection_users(request).insert_one(user)
     created_user = get_collection_users(request).find_one({"_id": new_user.inserted_id})
