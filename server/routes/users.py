@@ -69,10 +69,11 @@ async def logout_user(response: Response):
     users_rules.logout(response)
 
 
-# TODO: add "/follow/:id" route
-@router.post("/follow/{id}", response_model=User)
-async def follow_unfollow_user(request: Request, id: str):
-    return users_rules.follow_unfollow_user(request, id)
+@router.post("/follow/{id}", status_code=status.HTTP_200_OK)
+async def follow_unfollow_user(
+    request: Request, id: str, current_user: User = Depends(get_current_user_from_token)
+):
+    return users_rules.follow_unfollow_user(request, id, current_user)
 
 
 @router.get("/", response_description="List users", response_model=List[User])

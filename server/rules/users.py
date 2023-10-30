@@ -94,10 +94,38 @@ def logout(response: Response):
     response.delete_cookie("access_token")
 
 
-def follow_unfollow_user(request: Request, id: str):
-    print(ObjectId(id))
-    userToModify = get_collection_users(request).find_one({"_id": ObjectId(id)})
-    return userToModify
+def follow_unfollow_user(request: Request, id: ObjectId, current_user: User):
+    if id == current_user.id:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="You cannot follow/unfollow yourself.",
+        )
+
+    user_to_modify = get_collection_users(request).find_one({"_id": id})
+    if not user_to_modify or not current_user:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="User not found.",
+        )
+
+    is_following = id in current_user.following
+
+    if is_following:
+        get_collection_users(request).update_one(
+            {"_id": id}, {"$pull": {"followers": current_user.id}}
+        )
+        get_collection_users(request).update_one(
+            {"_id": current_user.id}, {"$pull": {"following": id}}
+        )
+        return {"detail": "User unfollowed successfully"}
+    else:
+        get_collection_users(request).update_one(
+            {"_id": id}, {"$push": {"followers": current_user.id}}
+        )
+        get_collection_users(request).update_one(
+            {"_id": current_user.id}, {"$push": {"following": id}}
+        )
+        return {"detail": "User followed successfully"}
 
 
 def list_users(request: Request, limit: int):
