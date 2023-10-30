@@ -22,8 +22,8 @@ def create_jwt_set_cookies(
     )
 
     res.set_cookie(
-        key="jwt",
-        value=encoded_jwt,
+        key="access_token",
+        value=f"Bearer {encoded_jwt}",
         httponly=True,
         domain="127.0.0.1",
         max_age=expire.strftime("%a, %d-%b-%Y %T GMT"),

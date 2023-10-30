@@ -1,8 +1,12 @@
-from fastapi import APIRouter, Body, Cookie, Depends, HTTPException, Header, Request, Response, status
+from fastapi import APIRouter, Body, Depends, HTTPException, Header, Request, Response, status
 from typing import Annotated, List, Optional
-from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from fastapi.security import OAuth2PasswordRequestForm
 from jose import JWTError, jwt
+from fastapi.openapi.models import OAuthFlows as OAuthFlowsModel
+from fastapi.security.utils import get_authorization_scheme_param
 from bson import ObjectId
+from typing import Dict
+from fastapi.security import OAuth2
 
 from pydantic import BaseModel
 from db.models.user import User
@@ -10,10 +14,38 @@ from db.models.user import User
 import rules.users as users_rules
 from config.config_api import settings
 
+class OAuth2PasswordBearerWithCookie(OAuth2):
+    def __init__(
+        self,
+        tokenUrl: str,
+        scheme_name: Optional[str] = None,
+        scopes: Optional[Dict[str, str]] = None,
+        auto_error: bool = True,
+    ):
+        if not scopes:
+            scopes = {}
+        flows = OAuthFlowsModel(password={"tokenUrl": tokenUrl, "scopes": scopes})
+        super().__init__(flows=flows, scheme_name=scheme_name, auto_error=auto_error)
+
+    async def __call__(self, request: Request) -> Optional[str]:
+        authorization: str = request.cookies.get("access_token")
+
+        scheme, param = get_authorization_scheme_param(authorization)
+        if not authorization or scheme.lower() != "bearer":
+            if self.auto_error:
+                raise HTTPException(
+                    status_code=status.HTTP_401_UNAUTHORIZED,
+                    detail="Not authenticated",
+                    headers={"WWW-Authenticate": "Bearer"},
+                )
+            else:
+                return None
+        return param
+    
 
 router = APIRouter(prefix="/users", tags=["Users"])
 
-oauth2 = OAuth2PasswordBearer(tokenUrl="login")
+oauth2 = OAuth2PasswordBearerWithCookie(tokenUrl="login")
 
 
 async def get_current_user(request: Request, token: str = Depends(oauth2)):
@@ -25,7 +57,7 @@ async def get_current_user(request: Request, token: str = Depends(oauth2)):
     
     try:
         payload = jwt.decode(
-            token, settings.jwt_secret_key, algorithms=[settings.jwt_algorithm]
+            token, settings.jwt_secret_key, algorithms=settings.jwt_algorithm
         )
         user_id = payload.get("id")
         if user_id is None:
@@ -67,7 +99,8 @@ async def login(
     response: Response,
     user: Annotated[OAuth2PasswordRequestForm, Depends()],
 ):
-    return users_rules.login_user(request, response, user)
+    access_token = users_rules.login_user(request, response, user)
+    return {"access_token": access_token, "token_type": "bearer"}
 
 
 @router.get("/logout")

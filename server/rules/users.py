@@ -88,7 +88,7 @@ def login_user(request: Request, response: Response, user: OAuth2PasswordRequest
 
 
 def logout(response: Response):
-    response.delete_cookie("jwt")
+    response.delete_cookie("access_token")
 
 
 def follow_unfollow_user(request: Request, id: str):
