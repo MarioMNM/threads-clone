@@ -28,7 +28,8 @@ def create_jwt_set_cookies(
         domain="127.0.0.1",
         max_age=expire.strftime("%a, %d-%b-%Y %T GMT"),
         expires=expire.strftime("%a, %d-%b-%Y %T GMT"),
-        samesite="strict",
+        samesite="none",
+        secure=True
     )
 
     return encoded_jwt
