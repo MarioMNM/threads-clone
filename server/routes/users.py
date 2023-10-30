@@ -38,9 +38,7 @@ async def get_current_user_from_token(request: Request, token: str = Depends(oau
             raise credentials_exception
     except JWTError:
         raise credentials_exception
-    user = users_rules.get_collection_users(request).find_one(
-        {"_id": user_id}
-    )
+    user = users_rules.get_collection_users(request).find_one({"_id": user_id})
     if user is None:
         raise credentials_exception
     return User(**user)

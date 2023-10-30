@@ -1,5 +1,7 @@
 from datetime import datetime
+import pytz
 
 
 def datetime_now() -> datetime:
-    return datetime.utcnow()
+    gmt = pytz.timezone('GMT')
+    return datetime.now(gmt)
