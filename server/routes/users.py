@@ -1,60 +1,36 @@
-from fastapi import APIRouter, Body, Depends, HTTPException, Header, Request, Response, status
+from fastapi import (
+    APIRouter,
+    Body,
+    Depends,
+    HTTPException,
+    Header,
+    Request,
+    Response,
+    status,
+)
 from typing import Annotated, List, Optional
 from fastapi.security import OAuth2PasswordRequestForm
 from jose import JWTError, jwt
-from fastapi.openapi.models import OAuthFlows as OAuthFlowsModel
-from fastapi.security.utils import get_authorization_scheme_param
 from bson import ObjectId
-from typing import Dict
-from fastapi.security import OAuth2
-
-from pydantic import BaseModel
 from db.models.user import User
 
 import rules.users as users_rules
 from config.config_api import settings
+from utils.helpers.auth import OAuth2PasswordBearerWithCookie
 
-class OAuth2PasswordBearerWithCookie(OAuth2):
-    def __init__(
-        self,
-        tokenUrl: str,
-        scheme_name: Optional[str] = None,
-        scopes: Optional[Dict[str, str]] = None,
-        auto_error: bool = True,
-    ):
-        if not scopes:
-            scopes = {}
-        flows = OAuthFlowsModel(password={"tokenUrl": tokenUrl, "scopes": scopes})
-        super().__init__(flows=flows, scheme_name=scheme_name, auto_error=auto_error)
-
-    async def __call__(self, request: Request) -> Optional[str]:
-        authorization: str = request.cookies.get("access_token")
-
-        scheme, param = get_authorization_scheme_param(authorization)
-        if not authorization or scheme.lower() != "bearer":
-            if self.auto_error:
-                raise HTTPException(
-                    status_code=status.HTTP_401_UNAUTHORIZED,
-                    detail="Not authenticated",
-                    headers={"WWW-Authenticate": "Bearer"},
-                )
-            else:
-                return None
-        return param
-    
 
 router = APIRouter(prefix="/users", tags=["Users"])
 
 oauth2 = OAuth2PasswordBearerWithCookie(tokenUrl="login")
 
 
-async def get_current_user(request: Request, token: str = Depends(oauth2)):
+async def get_current_user_from_token(request: Request, token: str = Depends(oauth2)):
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
         headers={"WWW-Authenticate": "Bearer"},
     )
-    
+
     try:
         payload = jwt.decode(
             token, settings.jwt_secret_key, algorithms=settings.jwt_algorithm
@@ -70,11 +46,6 @@ async def get_current_user(request: Request, token: str = Depends(oauth2)):
     if user is None:
         raise credentials_exception
     return User(**user)
-    
-
-@router.get("/test")
-async def read_items(cookie: Optional[str] = Header(None)):
-    return {"Cookie": cookie}
 
 
 @router.post(
@@ -87,12 +58,6 @@ async def create_user(request: Request, response: Response, user=Body(...)):
     return users_rules.create_user(request, response, user)
 
 
-# TODO: refactor LoginRequest
-class LoginRequest(BaseModel):
-    username: str
-    password: str
-
-
 @router.post("/login")
 async def login(
     request: Request,
@@ -103,7 +68,7 @@ async def login(
     return {"access_token": access_token, "token_type": "bearer"}
 
 
-@router.get("/logout")
+@router.get("/logout", status_code=status.HTTP_204_NO_CONTENT)
 async def logout_user(response: Response):
     users_rules.logout(response)
 
@@ -120,7 +85,7 @@ async def list_users(request: Request):
 
 
 @router.get("/me")
-async def me(user: User = Depends(get_current_user)):
+async def me(user: User = Depends(get_current_user_from_token)):
     return user
 
 
@@ -138,5 +103,3 @@ async def find_user(request: Request, id: str):
 )
 async def delete_user(request: Request, id: str):
     return users_rules.delete_user(request, id)
-
-
