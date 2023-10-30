@@ -3,15 +3,13 @@ from fastapi import (
     Body,
     Depends,
     HTTPException,
-    Header,
     Request,
     Response,
     status,
 )
-from typing import Annotated, List, Optional
+from typing import Annotated, List
 from fastapi.security import OAuth2PasswordRequestForm
 from jose import JWTError, jwt
-from bson import ObjectId
 from db.models.user import User
 
 import rules.users as users_rules
@@ -41,7 +39,7 @@ async def get_current_user_from_token(request: Request, token: str = Depends(oau
     except JWTError:
         raise credentials_exception
     user = users_rules.get_collection_users(request).find_one(
-        {"_id": ObjectId(user_id)}
+        {"_id": user_id}
     )
     if user is None:
         raise credentials_exception
@@ -85,7 +83,7 @@ async def list_users(request: Request):
 
 
 @router.get("/me")
-async def me(user: User = Depends(get_current_user_from_token)):
+async def current_user(user: User = Depends(get_current_user_from_token)):
     return user
 
 

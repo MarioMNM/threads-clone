@@ -31,14 +31,25 @@ def find_user(request: Request, id: ObjectId):
     )
 
 
-def create_user(request: Request, response: Response, user: User = Body(...)): 
+def create_user(request: Request, response: Response, user: User = Body(...)):
     user = jsonable_encoder(user)
-    existing_user = get_collection_users(request).find_one({"email": user["email"]})
 
-    if existing_user:
+    existing_user_email = get_collection_users(request).find_one(
+        {"email": user["email"]}
+    )
+    if existing_user_email:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Email address is already in use",
+        )
+
+    existing_user_username = get_collection_users(request).find_one(
+        {"username": user["username"]}
+    )
+    if existing_user_username:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Username is already in use",
         )
 
     user["password"] = get_password_hash(user["password"])
