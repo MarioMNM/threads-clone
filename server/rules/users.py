@@ -23,8 +23,8 @@ def get_collection_users(request: Request):
     return request.app.database["users"]
 
 
-async def find_user(request: Request, id: str):
-    if user := get_collection_users(request).find_one({"_id": ObjectId(id)}):
+def find_user(request: Request, id: ObjectId):
+    if user := get_collection_users(request).find_one({"_id": id}):
         return user
     raise HTTPException(
         status_code=status.HTTP_404_NOT_FOUND, detail=f"User with id {id} not found!"
@@ -50,7 +50,7 @@ def create_user(request: Request, response: Response, user: User = Body(...)):
         created_user = get_collection_users(request).find_one(
             {"_id": new_user.inserted_id}
         )
-        return User(**created_user)
+        return created_user
 
     raise HTTPException(
         status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid user data."
@@ -95,7 +95,7 @@ def list_users(request: Request, limit: int):
 
 
 def delete_user(request: Request, id: ObjectId):
-    deleted_user = get_collection_users(request).delete_one({"_id": ObjectId(id)})
+    deleted_user = get_collection_users(request).delete_one({"_id": id})
 
     if deleted_user.deleted_count != 1:
         raise HTTPException(

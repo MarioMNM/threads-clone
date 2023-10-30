@@ -54,7 +54,7 @@ async def get_current_user_from_token(request: Request, token: str = Depends(oau
     status_code=status.HTTP_201_CREATED,
     response_model=User,
 )
-async def create_user(request: Request, response: Response, user=Body(...)):
+async def create_user(request: Request, response: Response, user: User = Body(...)):
     return users_rules.create_user(request, response, user)
 
 
