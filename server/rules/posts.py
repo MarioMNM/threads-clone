@@ -1,4 +1,4 @@
-from fastapi import Request, Response, HTTPException, status
+from fastapi import Request, HTTPException, status
 from fastapi.encoders import jsonable_encoder
 
 from db.models.post import Post
@@ -11,7 +11,6 @@ def get_collection_posts(request: Request):
 
 def create_post(
     request: Request,
-    response: Response,
     post: Post,
     current_user: User,
 ):
@@ -36,3 +35,8 @@ def create_post(
     raise HTTPException(
         status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid post data."
     )
+
+
+def list_posts(request: Request, limit: int):
+    posts = list(get_collection_posts(request).find(limit=limit))
+    return posts

@@ -1,4 +1,5 @@
-from fastapi import APIRouter, Body, Depends, Request, Response, status
+from typing import List
+from fastapi import APIRouter, Body, Depends, Request, status
 
 import rules.posts as posts_rules
 from db.models.post import Post
@@ -16,8 +17,12 @@ router = APIRouter(prefix="/posts", tags=["Posts"])
 )
 async def create_post(
     request: Request,
-    response: Response,
     post: Post = Body(...),
     current_user: User = Depends(get_current_user_from_token),
 ):
-    return posts_rules.create_post(request, response, post, current_user)
+    return posts_rules.create_post(request, post, current_user)
+
+
+@router.get("/", response_description="List posts", response_model=List[Post])
+async def list_posts(request: Request):
+    return posts_rules.list_posts(request, 100)
