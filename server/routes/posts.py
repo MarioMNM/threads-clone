@@ -42,3 +42,10 @@ async def delete_post(request: Request, post_id: str):
     return posts_rules.delete_post(request, post_id)
 
 
+@router.put("/like/{post_id}", status_code=status.HTTP_200_OK)
+async def like_unlike_post(
+    request: Request,
+    post_id: str,
+    current_user: User = Depends(get_current_user_from_token),
+):
+    return posts_rules.like_unlike_post(request, post_id, current_user)

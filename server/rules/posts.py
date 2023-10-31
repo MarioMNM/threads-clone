@@ -60,3 +60,31 @@ def delete_post(request: Request, post_id: ObjectId):
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Post with id {post_id} not found!",
         )
+
+
+def like_unlike_post(
+    request: Request,
+    post_id: str,
+    current_user: User,
+):
+    post = get_collection_posts(request).find_one({"_id": post_id})
+    if not post:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Post with id {post_id} not found!",
+        )
+
+    user_liked_post = current_user.id in post.get("likes")
+
+    if user_liked_post:
+        # Unlike post
+        get_collection_posts(request).update_one(
+            {"_id": post_id}, {"$pull": {"likes": current_user.id}}
+        )
+        return {"detail": "Post unliked successfully"}
+    else:
+        # Like post
+        get_collection_posts(request).update_one(
+            {"_id": post_id}, {"$push": {"likes": current_user.id}}
+        )
+        return {"detail": "Post liked successfully"}
