@@ -7,7 +7,7 @@ from passlib.context import CryptContext
 
 from utils.helpers.jwt_cookies import create_jwt_set_cookies
 from config.config_api import settings
-from db.models.user import UpdateUser, User, UserData
+from db.models.user import User, UserData
 
 
 crypt = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -180,9 +180,8 @@ def update_user(
     request: Request,
     user_id: str,
     current_user: User,
-    user_update: UpdateUser = Body(...),
+    user_update = Body(...),
 ):
-    user_update = {k: v for k, v in user_update.dict().items() if v is not None}
     if user_id != current_user.id:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,

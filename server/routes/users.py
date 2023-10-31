@@ -1,7 +1,7 @@
 from typing import Annotated, List
 
 import rules.users as users_rules
-from db.models.user import UpdateUser, User, UserData
+from db.models.user import User, UserData
 from fastapi import (
     APIRouter,
     Body,
@@ -89,6 +89,6 @@ async def update_user(
     request: Request,
     id: str,
     current_user: User = Depends(get_current_user_from_token),
-    user_update: UpdateUser = Body(...),
+    user_update = Body(...), # TODO: add UpdateUser model
 ):
     return users_rules.update_user(request, id, current_user, user_update)
