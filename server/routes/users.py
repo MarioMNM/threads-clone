@@ -1,7 +1,7 @@
 from typing import Annotated, List
 
 import rules.users as users_rules
-from db.models.user import User
+from db.models.user import User, UserData
 from fastapi import (
     APIRouter,
     Body,
@@ -10,6 +10,7 @@ from fastapi import (
     Response,
     status,
 )
+from fastapi.encoders import jsonable_encoder
 from fastapi.security import OAuth2PasswordRequestForm
 from utils.helpers.auth import OAuth2PasswordBearerWithCookie
 
@@ -26,7 +27,7 @@ async def get_current_user_from_token(request: Request, token: str = Depends(oau
     "/signup",
     response_description="Create a new user",
     status_code=status.HTTP_201_CREATED,
-    response_model=User,
+    response_model=UserData,
 )
 async def create_user(request: Request, response: Response, user: User = Body(...)):
     return users_rules.create_user(request, response, user)
@@ -59,15 +60,16 @@ async def list_users(request: Request):
     return users_rules.list_users(request, 100)
 
 
-@router.get("/me")
+@router.get("/me", response_model=UserData)
 async def current_user(user: User = Depends(get_current_user_from_token)):
-    return user
+    user = jsonable_encoder(user)
+    return UserData(**user)
 
 
 @router.get(
     "/profile/{query}",
     response_description="Get a single user by id",
-    response_model=User,
+    response_model=UserData,
 )
 async def find_user(request: Request, query: str):
     return users_rules.find_user(request, query)

@@ -1,6 +1,6 @@
 from bson import ObjectId
 from config.config_api import settings
-from db.models.user import User
+from db.models.user import User, UserData
 from fastapi import Body, HTTPException, Request, Response, status
 from fastapi.encoders import jsonable_encoder
 from fastapi.security import OAuth2PasswordRequestForm
@@ -48,7 +48,7 @@ def get_current_user_from_token(request: Request, token: str):
 def find_user(request: Request, query: str | ObjectId):
     if ObjectId.is_valid(query):
         if user := get_collection_users(request).find_one({"_id": query}):
-            return user
+            return UserData(**user)
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"User with id {query} not found!",
@@ -56,7 +56,7 @@ def find_user(request: Request, query: str | ObjectId):
 
     else:
         if user := get_collection_users(request).find_one({"username": query}):
-            return user
+            return UserData(**user)
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"User with username {query} not found!",
@@ -93,7 +93,7 @@ def create_user(request: Request, response: Response, user: User = Body(...)):
         created_user = get_collection_users(request).find_one(
             {"_id": new_user.inserted_id}
         )
-        return created_user
+        return UserData(**created_user)
 
     raise HTTPException(
         status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid user data."
