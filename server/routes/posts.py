@@ -12,6 +12,7 @@ router = APIRouter(prefix="/posts", tags=["Posts"])
     "/create",
     response_description="Create a new post",
     status_code=status.HTTP_201_CREATED,
+    response_model=Post,
 )
 async def create_post(
     request: Request,

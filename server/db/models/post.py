@@ -8,9 +8,9 @@ from utils.helpers.datetime_helpers import datetime_now
 
 class Post(BaseModel):
     id: ObjectId | str = Field(default_factory=ObjectId, alias="_id")
-    postedBy: ObjectId | str
+    postedBy: ObjectId | str = ""
     text: str = Field(..., max_length=500)
-    img: str | None
+    img: str | None = ""
     likes: None | List[ObjectId | str] = []
     replies: List[dict] = []
     updatedAt: datetime = Field(default_factory=datetime_now)
