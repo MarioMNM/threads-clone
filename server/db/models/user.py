@@ -20,9 +20,12 @@ class UserData(BaseModel):
         json_encoders = {ObjectId: str}
         json_schema_extra = {
             "example": {
+                "id": "65413dbb2c2ebdf25f349ca0",
                 "name": "Mario",
                 "email": "mario@gmail.com",
                 "username": "mariomnm",
+                "bio": "Mathematician & Data Scientist. AI enthusiast. Web development passionate.",
+                "profilePic": "https://avatars.githubusercontent.com/u/117460164?v=4",
             }
         }
 
