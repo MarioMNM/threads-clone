@@ -1,5 +1,6 @@
 from fastapi import Request, HTTPException, status
 from fastapi.encoders import jsonable_encoder
+from bson import ObjectId
 
 from db.models.post import Post
 from db.models.user import User
@@ -40,3 +41,12 @@ def create_post(
 def list_posts(request: Request, limit: int):
     posts = list(get_collection_posts(request).find(limit=limit))
     return posts
+
+
+def find_post(request: Request, id: str | ObjectId):
+    if post := get_collection_posts(request).find_one({"_id": id}):
+        return Post(**post)
+    raise HTTPException(
+        status_code=status.HTTP_404_NOT_FOUND,
+        detail=f"User with id {id} not found!",
+    )

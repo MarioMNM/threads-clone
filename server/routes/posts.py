@@ -26,3 +26,8 @@ async def create_post(
 @router.get("/", response_description="List posts", response_model=List[Post])
 async def list_posts(request: Request):
     return posts_rules.list_posts(request, 100)
+
+
+@router.get("/{id}", response_description="Post", response_model=Post)
+async def find_post(request: Request, id: str):
+    return posts_rules.find_post(request, id)
