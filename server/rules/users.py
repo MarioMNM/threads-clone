@@ -1,12 +1,14 @@
 from bson import ObjectId
-from config.config_api import settings
-from db.models.user import User, UserData
 from fastapi import Body, HTTPException, Request, Response, status
 from fastapi.encoders import jsonable_encoder
 from fastapi.security import OAuth2PasswordRequestForm
 from jose import JWTError, jwt
 from passlib.context import CryptContext
+
 from utils.helpers.jwt_cookies import create_jwt_set_cookies
+from config.config_api import settings
+from db.models.user import UpdateUser, User, UserData
+
 
 crypt = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
@@ -171,4 +173,39 @@ def delete_user(request: Request, id: ObjectId):
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"User with id {id} not found!",
+        )
+
+
+def update_user(
+    request: Request,
+    user_id: str,
+    current_user: User,
+    user_update: UpdateUser = Body(...),
+):
+    user_update = {k: v for k, v in user_update.dict().items() if v is not None}
+    if user_id != current_user.id:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="You cannot update other user's profile",
+        )
+
+    if user_update.get("password"):
+        current_user.password = get_password_hash(user_update.get("password"))
+
+    current_user.name = user_update.get("name", current_user.name)
+    current_user.email = user_update.get("email", current_user.email)
+    current_user.username = user_update.get("username", current_user.username)
+    current_user.profilePic = user_update.get("profilePic", current_user.profilePic)
+    current_user.bio = user_update.get("bio", current_user.bio)
+    current_user.updatedAt
+
+    result = get_collection_users(request).update_one(
+        {"_id": user_id}, {"$set": jsonable_encoder(current_user)}
+    )
+    if result.matched_count == 1:
+        return UserData(**jsonable_encoder(current_user))
+    else:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Could not update user",
         )

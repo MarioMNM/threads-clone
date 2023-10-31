@@ -1,7 +1,7 @@
 from typing import Annotated, List
 
 import rules.users as users_rules
-from db.models.user import User, UserData
+from db.models.user import UpdateUser, User, UserData
 from fastapi import (
     APIRouter,
     Body,
@@ -82,3 +82,13 @@ async def find_user(request: Request, query: str):
 )
 async def delete_user(request: Request, id: str):
     return users_rules.delete_user(request, id)
+
+
+@router.patch("/update/{id}")
+async def update_user(
+    request: Request,
+    id: str,
+    current_user: User = Depends(get_current_user_from_token),
+    user_update: UpdateUser = Body(...),
+):
+    return users_rules.update_user(request, id, current_user, user_update)

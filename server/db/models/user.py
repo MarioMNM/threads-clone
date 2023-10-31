@@ -1,8 +1,8 @@
 from datetime import datetime
-from typing import List
-
+from typing import List, Self
 from bson import ObjectId
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, EmailStr, Field, create_model
+
 from utils.helpers.datetime_helpers import datetime_now
 
 
@@ -33,7 +33,18 @@ class User(UserData):
     following: None | List[str] = []
     updatedAt: datetime = Field(default_factory=datetime_now)
 
+    @classmethod
+    def all_optional(cls, name: str) -> type[Self]:
+        """
+        Creates a new model with the same fields, but all optional.
 
-class UpdateUser(UserData):
-    password: None | str
-    updatedAt: datetime = Field(default_factory=datetime_now)
+        Usage: SomeOptionalModel = SomeModel.all_optional('SomeOptionalModel')
+        """
+        return create_model(
+            name,
+            __base__=cls,
+            **{name: (info.annotation, None) for name, info in cls.model_fields.items()}
+        )
+
+
+UpdateUser = User.all_optional("UpdateUser")
