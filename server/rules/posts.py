@@ -43,20 +43,20 @@ def list_posts(request: Request, limit: int):
     return posts
 
 
-def find_post(request: Request, id: ObjectId):
-    if post := get_collection_posts(request).find_one({"_id": id}):
+def find_post(request: Request, post_id: ObjectId):
+    if post := get_collection_posts(request).find_one({"_id": post_id}):
         return Post(**post)
     raise HTTPException(
         status_code=status.HTTP_404_NOT_FOUND,
-        detail=f"Post with id {id} not found!",
+        detail=f"Post with id {post_id} not found!",
     )
 
 
-def delete_post(request: Request, id: ObjectId):
-    deleted_post = get_collection_posts(request).delete_one({"_id": id})
+def delete_post(request: Request, post_id: ObjectId):
+    deleted_post = get_collection_posts(request).delete_one({"_id": post_id})
 
     if deleted_post.deleted_count != 1:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Post with id {id} not found!",
+            detail=f"Post with id {post_id} not found!",
         )
