@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 
-import rules.users as users_rules
+import rules.posts as posts_rules
 from db.models.post import Post
 
 
