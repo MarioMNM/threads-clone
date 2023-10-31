@@ -1,21 +1,17 @@
+from typing import Annotated, List
+
+import rules.users as users_rules
+from db.models.user import User
 from fastapi import (
     APIRouter,
     Body,
     Depends,
-    HTTPException,
     Request,
     Response,
     status,
 )
-from typing import Annotated, List
 from fastapi.security import OAuth2PasswordRequestForm
-from jose import JWTError, jwt
-from db.models.user import User
-
-import rules.users as users_rules
-from config.config_api import settings
 from utils.helpers.auth import OAuth2PasswordBearerWithCookie
-
 
 router = APIRouter(prefix="/users", tags=["Users"])
 
@@ -23,25 +19,7 @@ oauth2 = OAuth2PasswordBearerWithCookie(tokenUrl="login")
 
 
 async def get_current_user_from_token(request: Request, token: str = Depends(oauth2)):
-    credentials_exception = HTTPException(
-        status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Could not validate credentials",
-        headers={"WWW-Authenticate": "Bearer"},
-    )
-
-    try:
-        payload = jwt.decode(
-            token, settings.jwt_secret_key, algorithms=settings.jwt_algorithm
-        )
-        user_id = payload.get("id")
-        if user_id is None:
-            raise credentials_exception
-    except JWTError:
-        raise credentials_exception
-    user = users_rules.get_collection_users(request).find_one({"_id": user_id})
-    if user is None:
-        raise credentials_exception
-    return User(**user)
+    return users_rules.get_current_user_from_token(request, token)
 
 
 @router.post(
@@ -87,10 +65,12 @@ async def current_user(user: User = Depends(get_current_user_from_token)):
 
 
 @router.get(
-    "/{id}", response_description="Get a single user by id", response_model=User
+    "/profile/{query}",
+    response_description="Get a single user by id",
+    response_model=User,
 )
-async def find_user(request: Request, id: str):
-    return users_rules.find_user(request, id)
+async def find_user(request: Request, query: str):
+    return users_rules.find_user(request, query)
 
 
 @router.delete(

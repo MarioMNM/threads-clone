@@ -1,12 +1,12 @@
-from fastapi import Body, Request, Response, HTTPException, status
+from bson import ObjectId
+from config.config_api import settings
+from db.models.user import User
+from fastapi import Body, HTTPException, Request, Response, status
 from fastapi.encoders import jsonable_encoder
 from fastapi.security import OAuth2PasswordRequestForm
+from jose import JWTError, jwt
 from passlib.context import CryptContext
-from db.models.user import User
-from bson import ObjectId
-
 from utils.helpers.jwt_cookies import create_jwt_set_cookies
-
 
 crypt = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
@@ -23,12 +23,44 @@ def get_collection_users(request: Request):
     return request.app.database["users"]
 
 
-def find_user(request: Request, id: ObjectId):
-    if user := get_collection_users(request).find_one({"_id": id}):
-        return user
-    raise HTTPException(
-        status_code=status.HTTP_404_NOT_FOUND, detail=f"User with id {id} not found!"
+def get_current_user_from_token(request: Request, token: str):
+    credentials_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Could not validate credentials",
+        headers={"WWW-Authenticate": "Bearer"},
     )
+
+    try:
+        payload = jwt.decode(
+            token, settings.jwt_secret_key, algorithms=settings.jwt_algorithm
+        )
+        user_id = payload.get("id")
+        if user_id is None:
+            raise credentials_exception
+    except JWTError:
+        raise credentials_exception
+    user = get_collection_users(request).find_one({"_id": user_id})
+    if user is None:
+        raise credentials_exception
+    return User(**user)
+
+
+def find_user(request: Request, query: str | ObjectId):
+    if ObjectId.is_valid(query):
+        if user := get_collection_users(request).find_one({"_id": query}):
+            return user
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"User with id {query} not found!",
+        )
+
+    else:
+        if user := get_collection_users(request).find_one({"username": query}):
+            return user
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"User with username {query} not found!",
+        )
 
 
 def create_user(request: Request, response: Response, user: User = Body(...)):
@@ -69,15 +101,13 @@ def create_user(request: Request, response: Response, user: User = Body(...)):
 
 
 def login_user(request: Request, response: Response, user: OAuth2PasswordRequestForm):
-    existing_user = User(
-        **get_collection_users(request).find_one({"username": user.username})
-    )
-    existing_user = jsonable_encoder(existing_user)
-
+    existing_user = get_collection_users(request).find_one({"username": user.username})
     if not existing_user:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Username not found"
         )
+    existing_user = User(**existing_user)
+    existing_user = jsonable_encoder(existing_user)
 
     correct_pswd = verify_password(user.password, existing_user["password"])
     if not existing_user or not correct_pswd:
@@ -118,6 +148,7 @@ def follow_unfollow_user(request: Request, id: ObjectId, current_user: User):
             {"_id": current_user.id}, {"$pull": {"following": id}}
         )
         return {"detail": "User unfollowed successfully"}
+
     else:
         get_collection_users(request).update_one(
             {"_id": id}, {"$push": {"followers": current_user.id}}
