@@ -31,3 +31,12 @@ async def list_posts(request: Request):
 @router.get("/{id}", response_description="Post", response_model=Post)
 async def find_post(request: Request, id: str):
     return posts_rules.find_post(request, id)
+
+
+@router.delete(
+    "/{id}",
+    response_description="Delete a post",
+    status_code=status.HTTP_204_NO_CONTENT,
+)
+async def delete_post(request: Request, id: str):
+    return posts_rules.delete_post(request, id)
