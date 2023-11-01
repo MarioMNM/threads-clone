@@ -88,3 +88,36 @@ def like_unlike_post(
             {"_id": post_id}, {"$push": {"likes": current_user.id}}
         )
         return {"detail": "Post liked successfully"}
+
+
+def reply_post(
+    request: Request,
+    post_id: str,
+    current_user: User,
+    post_text: dict,
+):
+    if not post_text.get("text"):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Text field is required",
+        )
+
+    post = get_collection_posts(request).find_one({"_id": post_id})
+    if not post:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Post with id {post_id} not found!",
+        )
+
+    reply = {
+        "userId": current_user.id,
+        "text": post_text.get("text"),
+        "username": current_user.username,
+        "userProfilePic": current_user.profilePic,
+    }
+
+    get_collection_posts(request).update_one(
+        {"_id": post_id}, {"$push": {"replies": jsonable_encoder(reply)}}
+    )
+
+    return reply

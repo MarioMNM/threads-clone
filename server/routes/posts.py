@@ -49,3 +49,18 @@ async def like_unlike_post(
     current_user: User = Depends(get_current_user_from_token),
 ):
     return posts_rules.like_unlike_post(request, post_id, current_user)
+
+
+@router.put("/reply/{post_id}", status_code=status.HTTP_200_OK)
+async def reply_post(
+    request: Request,
+    post_id: str,
+    current_user: User = Depends(get_current_user_from_token),
+    post_text: dict = Body(...),
+):
+    return posts_rules.reply_post(
+        request,
+        post_id,
+        current_user,
+        post_text,
+    )
