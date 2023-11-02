@@ -121,3 +121,14 @@ def reply_post(
     )
 
     return reply
+
+
+def get_feed(request: Request, current_user: User):
+    following = current_user.following
+    posts = (
+        get_collection_posts(request)
+        .find({"postedBy": {"$in": following}})
+        .sort("updatedAt", -1)
+    )
+
+    return list(posts)

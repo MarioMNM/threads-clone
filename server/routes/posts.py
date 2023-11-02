@@ -28,6 +28,13 @@ async def list_posts(request: Request):
     return posts_rules.list_posts(request, 100)
 
 
+@router.get("/feed", response_model=List[Post])
+async def get_feed(
+    request: Request, current_user: User = Depends(get_current_user_from_token)
+):
+    return posts_rules.get_feed(request, current_user)
+
+
 @router.get("/{post_id}", response_description="Post", response_model=Post)
 async def find_post(request: Request, post_id: str):
     return posts_rules.find_post(request, post_id)
