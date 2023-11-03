@@ -25,11 +25,11 @@ def create_jwt_set_cookies(
         key="access_token",
         value=f"Bearer {encoded_jwt}",
         httponly=True,
-        domain="127.0.0.1",
+        domain="0.0.0.0",
         max_age=expire.strftime("%a, %d-%b-%Y %T GMT"),
         expires=expire.strftime("%a, %d-%b-%Y %T GMT"),
-        samesite="none",
-        secure=True
+        samesite="lax",    # in production: samesite="none",
+        secure=False         # in production: secure=True
     )
 
     return encoded_jwt
