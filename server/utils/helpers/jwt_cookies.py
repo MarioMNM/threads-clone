@@ -24,11 +24,10 @@ def create_jwt_set_cookies(
     res.set_cookie(
         key="access_token",
         value=f"Bearer {encoded_jwt}",
-        httponly=True,
-        domain="0.0.0.0",
+        httponly=False,      # in production: httponly=True,
         max_age=expire.strftime("%a, %d-%b-%Y %T GMT"),
         expires=expire.strftime("%a, %d-%b-%Y %T GMT"),
-        samesite="lax",    # in production: samesite="none",
+        samesite="lax",      # in production: samesite="none",
         secure=False         # in production: secure=True
     )
 
