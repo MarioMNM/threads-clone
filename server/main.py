@@ -10,7 +10,13 @@ from config.config_api import settings
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    app.mongodb_client = MongoClient(settings.db_url)
+    app.mongodb_client = MongoClient(
+        host="mongodb",
+        port=27017,
+        username=settings.db_docker_username,
+        password=settings.db_docker_password,
+        authSource=settings.db_docker_authsource,
+    )  # MongoClient(settings.db_url)
     app.database = app.mongodb_client[settings.db_name]
     yield
     app.mongodb_client.close()

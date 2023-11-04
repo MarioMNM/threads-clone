@@ -1,5 +1,17 @@
 version: "3"
 services:
+  mongodb:
+    image: mongo:latest
+    hostname: 0.0.0.0
+    ports:
+      - "27017:27017"
+    environment:
+      - MONGO_INITDB_DATABASE=${MONGODB_DOCKER_INITDB_DATABASE}
+      - MONGO_INITDB_ROOT_USERNAME=${MONGODB_DOCKER_USERNAME}
+      - MONGO_INITDB_ROOT_PASSWORD=${MONGODB_DOCKER_PASSWORD}
+    networks:
+      - mynetwork
+
   client:
     build:
       context: ./client
@@ -7,10 +19,12 @@ services:
     ports:
       - "5173:5173"
     volumes:
-      - ./client:/client # Monta el directorio local en el contenedor
+      - ./client:/client
       - /client/node_modules
     networks:
       - mynetwork
+    depends_on:
+      - mongodb
 
   server:
     build:
@@ -18,10 +32,14 @@ services:
       dockerfile: Dockerfile
     ports:
       - "8000:8000"
+    volumes:
+      - ./server:/server
     networks:
       - mynetwork
     depends_on:
-      - client
+      - mongodb
+    links:
+      - mongodb
 
 networks:
   mynetwork:

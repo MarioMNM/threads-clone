@@ -2,16 +2,16 @@
 FROM python:3.11.6-slim
 
 # 
-WORKDIR /
+WORKDIR /server
 
 # 
-COPY ./requirements.txt /requirements.txt
+COPY requirements.txt ./
 
 # 
-RUN pip install --no-cache-dir --upgrade -r /requirements.txt
+RUN pip install --no-cache-dir --upgrade -r ./requirements.txt
 
 # 
-COPY ./ /
+COPY . .
 
 # 
 CMD ["uvicorn", "main:app", "--proxy-headers", "--host", "0.0.0.0", "--port", "8000"]
