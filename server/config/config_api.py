@@ -11,6 +11,7 @@ class Settings(BaseSettings):
     db_docker_username: str = config["MONGODB_DOCKER_USERNAME"]
     db_docker_password: str = config["MONGODB_DOCKER_PASSWORD"]
     db_docker_authsource: str = config["MONGODB_DOCKER_AUTHSOURCE"]
+    mongodb_server: str = config["MONGODB_SERVER"]
 
 
 settings = Settings()

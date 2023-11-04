@@ -10,13 +10,22 @@ from config.config_api import settings
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    app.mongodb_client = MongoClient(
+    mongo_docker_client = MongoClient(
         host="mongodb",
         port=27017,
         username=settings.db_docker_username,
         password=settings.db_docker_password,
         authSource=settings.db_docker_authsource,
-    )  # MongoClient(settings.db_url)
+    )
+    if not settings.mongodb_server or settings.mongodb_server == "docker":
+        mongo_client = mongo_docker_client
+    elif settings.mongodb_server == "online":
+        mongo_client = MongoClient(settings.db_url)
+    else:
+        print("Wrong mongodb server provided. Starting on docker server.")
+        mongo_client = mongo_docker_client
+
+    app.mongodb_client = mongo_client
     app.database = app.mongodb_client[settings.db_name]
     yield
     app.mongodb_client.close()
