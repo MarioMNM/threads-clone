@@ -14,8 +14,11 @@ import {
   Text,
   useColorModeValue
 } from '@chakra-ui/react'
+import { useSetRecoilState } from 'recoil'
+import authScreenAtom from '../../shared/components/Atoms/authAtom'
 
 export default function SimpleCard() {
+  const setAuthScreen = useSetRecoilState(authScreenAtom)
   return (
     <Flex align={'center'} justify={'center'}>
       <Stack spacing={8} mx={'auto'} maxW={'lg'} py={12} px={6}>
@@ -57,7 +60,14 @@ export default function SimpleCard() {
               </Button>
               <Text align={'center'}>
                 Don&apos;t have an account?{' '}
-                <Link color={'blue.400'}>Sign Up</Link>
+                <Link
+                  color={'blue.400'}
+                  onClick={() => {
+                    setAuthScreen('signup')
+                  }}
+                >
+                  Sign Up
+                </Link>
               </Text>
             </Stack>
           </Stack>
