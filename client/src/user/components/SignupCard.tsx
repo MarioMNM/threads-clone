@@ -69,7 +69,7 @@ export default function SignupCard() {
                 </InputRightElement>
               </InputGroup>
             </FormControl>
-            <Stack spacing={10} pt={2}>
+            <Stack spacing={5}>
               <Button
                 loadingText='Submitting'
                 size='lg'
@@ -81,8 +81,6 @@ export default function SignupCard() {
               >
                 Sign up
               </Button>
-            </Stack>
-            <Stack pt={6}>
               <Text align={'center'}>
                 Already a user? <Link color={'blue.400'}>Login</Link>
               </Text>
